@@ -48,7 +48,7 @@ func TestHandleFunc_GET_NotFound(t *testing.T) {
 
 func TestRun(t *testing.T) {
 	oLoadEnv := loadEnv
-	loadEnv = func(filename string) (err error) {
+	loadEnv = func(filename ...string) (err error) {
 		os.Setenv("PORT", "8080")
 		return
 	}
