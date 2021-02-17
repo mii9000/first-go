@@ -122,7 +122,8 @@ func run() (s *http.Server) {
 	log.Println("created new empty data file")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handleFunc)
+	mux.Handle("/", http.FileServer(http.Dir("./static")))
+	mux.HandleFunc("/inputs", handleFunc)
 
 	s = &http.Server{
 		Addr:           port,
