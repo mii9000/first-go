@@ -107,9 +107,11 @@ func run() (s *http.Server) {
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
+		Handler:        mux, //FIXED: attach handler to server
 	}
 
 	go func() {
+		log.Printf("starting server on port %s", port)
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}

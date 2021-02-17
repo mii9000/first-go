@@ -60,6 +60,10 @@ func TestRun(t *testing.T) {
 		}
 	}()
 	srv := run()
+	//FIXED:add an assert to check there are handlers for request
+	if srv.Handler == nil {
+		t.Fatalf("server does not have any handler attached")
+	}
 	time.Sleep(1 * time.Second)
 	srv.Shutdown(context.TODO())
 }
