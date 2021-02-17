@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,15 +13,22 @@ import (
 	"time"
 )
 
-func TestHandleFunc_POST_Success(t *testing.T) {
-	w := httptest.NewRecorder()
+type inputs []formInput
+
+func postArrange(values ...string) *http.Request {
 	data := url.Values{}
-	data.Set("first_name", "John")
-	data.Set("last_name", "Doe")
-	data.Set("email", "email@example.com")
-	data.Set("phone_number", "0819999999")
+	data.Set("first_name", values[0])
+	data.Set("last_name", values[1])
+	data.Set("email", values[2])
+	data.Set("phone_number", values[3])
 	req, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return req
+}
+
+func TestHandleFunc_POST_Success(t *testing.T) {
+	w := httptest.NewRecorder()
+	req := postArrange("John", "Doe", "john@email.com", "096675432")
 	handleFunc(w, req)
 	//FIXED:change test to follow REST principles
 	if w.Code != http.StatusCreated {
@@ -32,29 +40,56 @@ func TestHandleFunc_POST_Success(t *testing.T) {
 
 //FIXED:add test to check bad requests
 func TestHandleFunc_POST_BadRequest(t *testing.T) {
+	//arrange
 	w := httptest.NewRecorder()
-	data := url.Values{}
-	data.Set("first_name", "John")
-	req, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(data.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req := postArrange("", "", "jane@email.com", "")
+
+	//act
 	handleFunc(w, req)
+
+	//assert
 	if w.Code != http.StatusBadRequest {
 		t.Fail()
 		t.Logf("Expected status code to be 400")
 	}
+
+	//cleanup
 	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
 }
 
+//FIXED:adds proper asserts
 func TestHandleFunc_GET_Success(t *testing.T) {
+	//arrange
+	postReq := postArrange("Get", "User", "user@email.com", "123456789")
+	handleFunc(httptest.NewRecorder(), postReq)
 	w := httptest.NewRecorder()
+
+	//act
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	handleFunc(w, req)
+	inputs := make([]formInput, 0)
+	err := json.NewDecoder(w.Body).Decode(&inputs)
+
+	//assert
 	if w.Code != http.StatusOK {
 		t.Fail()
+		t.Logf("Expected status code to be 200")
 	}
+	if err != nil {
+		t.Fail()
+		t.Logf("could not parse to list of form inputs")
+	}
+	if len(inputs) != 1 {
+		t.Fail()
+		t.Logf("expected 1 record")
+	}
+
+	//cleanup
+	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
 }
 
-func TestHandleFunc_GET_NotFound(t *testing.T) {
+//FIXED:rename test name according to intention of code block
+func TestHandleFunc_PUT_NotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodPut, "/", nil)
 	handleFunc(w, req)

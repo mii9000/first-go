@@ -86,8 +86,16 @@ func handleFunc(resp http.ResponseWriter, req *http.Request) {
 		resp.WriteHeader(http.StatusCreated)
 		fmt.Fprint(resp, "form saved")
 	case http.MethodGet:
+		//FIXED:returns all form data
+		file, err := ioutil.ReadFile(dataFile)
+		if err != nil {
+			resp.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(resp, err.Error())
+		}
+		resp.Header().Set("Content-Type", "application/json")
 		resp.WriteHeader(http.StatusOK)
-		fmt.Fprint(resp, "under construction")
+		resp.Write(file)
+		fmt.Fprint(resp, "data returned")
 	default:
 		log.Println("error no 404")
 		resp.WriteHeader(http.StatusNotFound)
