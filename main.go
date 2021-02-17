@@ -63,7 +63,13 @@ func handleFunc(resp http.ResponseWriter, req *http.Request) {
 			fmt.Fprint(resp, err.Error())
 			return
 		}
-		f := formInput{}
+		//FIXED:map values from form to model
+		f := formInput{
+			FirstName:   req.FormValue("first_name"),
+			LastName:    req.FormValue("last_name"),
+			PhoneNumber: req.FormValue("phone_number"),
+			Email:       req.FormValue("email"),
+		}
 		err = f.validate()
 		if err != nil {
 			resp.WriteHeader(http.StatusBadRequest)
@@ -76,7 +82,8 @@ func handleFunc(resp http.ResponseWriter, req *http.Request) {
 			fmt.Fprint(resp, err.Error())
 			return
 		}
-		resp.WriteHeader(http.StatusOK)
+		//FIXED:changed to 201 to follow REST principles
+		resp.WriteHeader(http.StatusCreated)
 		fmt.Fprint(resp, "form saved")
 	case http.MethodGet:
 		resp.WriteHeader(http.StatusOK)
@@ -99,6 +106,11 @@ func run() (s *http.Server) {
 		log.Fatal("no port specified")
 	}
 	port = fmt.Sprintf(":%s", port)
+
+	//FIXED:create new file to prevent data from not being written
+	//if the file was not present
+	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
+	log.Println("created new empty data file")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handleFunc)

@@ -22,8 +22,25 @@ func TestHandleFunc_POST_Success(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	handleFunc(w, req)
-	if w.Code != http.StatusOK {
+	//FIXED:change test to follow REST principles
+	if w.Code != http.StatusCreated {
 		t.Fail()
+		t.Logf("Expected status code to be 201")
+	}
+	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
+}
+
+//FIXED:add test to check bad requests
+func TestHandleFunc_POST_BadRequest(t *testing.T) {
+	w := httptest.NewRecorder()
+	data := url.Values{}
+	data.Set("first_name", "John")
+	req, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handleFunc(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fail()
+		t.Logf("Expected status code to be 400")
 	}
 	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
 }
@@ -62,7 +79,8 @@ func TestRun(t *testing.T) {
 	srv := run()
 	//FIXED:add an assert to check there are handlers for request
 	if srv.Handler == nil {
-		t.Fatalf("server does not have any handler attached")
+		t.Fail()
+		t.Log("server does not have any handler attached")
 	}
 	time.Sleep(1 * time.Second)
 	srv.Shutdown(context.TODO())
