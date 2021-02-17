@@ -96,7 +96,7 @@ func handleFunc(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/json")
 		resp.WriteHeader(http.StatusOK)
 		resp.Write(file)
-		fmt.Fprint(resp, "data returned")
+		log.Println("data returned")
 	default:
 		log.Println("error no 404")
 		resp.WriteHeader(http.StatusNotFound)

@@ -14,8 +14,8 @@
 
 <body>
     <div class="container">
-        <h1>Full-stack developer assignment</h1>
-        <form action="http://localhost:8080" method="POST" content="application/x-www-form-urlencoded">
+        <h1>Form</h1>
+        <form onsubmit="send(event,this)">
             <div class="mb-3">
                 <label for="first_name" class="form-label">First Name</label>
                 <input name="first_name" type="text" class="form-control" id="first_name">
@@ -36,16 +36,34 @@
         </form>
     </div>
 
-    <!-- Optional JavaScript; choose one of the two! -->
+    <script>
+        function send(e, form) {
+            e.preventDefault();
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+            var formData = new FormData(form)
 
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
--->
+            fetch('http://localhost:8092/inputs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        'first_name': formData.get('first_name'),
+                        'last_name': formData.get('last_name'),
+                        'email': formData.get('email'),
+                        'phone_number': formData.get('phone_number')
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        alert("Something went wrong!");
+                    } else {
+                        alert("Saved!")
+                    }
+                })
+                .catch(err => alert(err));
+        }
+    </script>
 </body>
 
 </html>
