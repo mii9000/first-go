@@ -94,7 +94,8 @@ func run() (s *http.Server) {
 		log.Fatal(err)
 	}
 	port, exist := os.LookupEnv("PORT")
-	if !exist {
+	//FIXED:check whether port is empty or not
+	if !exist || port == "" {
 		log.Fatal("no port specified")
 	}
 	port = fmt.Sprintf(":%s", port)
