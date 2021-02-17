@@ -60,8 +60,7 @@ func TestHandleFunc_POST_BadRequest(t *testing.T) {
 //FIXED:adds proper asserts
 func TestHandleFunc_GET_Success(t *testing.T) {
 	//arrange
-	postReq := postArrange("Get", "User", "user@email.com", "123456789")
-	handleFunc(httptest.NewRecorder(), postReq)
+	handleFunc(httptest.NewRecorder(), postArrange("Get", "User", "user@email.com", "123456789"))
 	w := httptest.NewRecorder()
 
 	//act
@@ -82,6 +81,37 @@ func TestHandleFunc_GET_Success(t *testing.T) {
 	if len(inputs) != 1 {
 		t.Fail()
 		t.Logf("expected 1 record")
+	}
+
+	//cleanup
+	ioutil.WriteFile(dataFile, []byte("[]"), os.ModeAppend)
+}
+
+//FIXED:adds test to check data gets appended and not replaced
+func TestHandleFunc_POST_Append_Success(t *testing.T) {
+	//arrange
+	handleFunc(httptest.NewRecorder(), postArrange("User", "One", "user1@email.com", "123456789"))
+	handleFunc(httptest.NewRecorder(), postArrange("Two", "User", "user2@email.com", "987654321"))
+	w := httptest.NewRecorder()
+
+	//act
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	handleFunc(w, req)
+	inputs := make([]formInput, 0)
+	json.NewDecoder(w.Body).Decode(&inputs)
+
+	//assert
+	if len(inputs) != 2 {
+		t.Fail()
+		t.Logf("expected 2 records")
+	}
+	if inputs[0].Email != "user1@email.com" {
+		t.Fail()
+		t.Logf("expected first user email to be 'user1@rmail.com'")
+	}
+	if inputs[1].Email != "user2@email.com" {
+		t.Fail()
+		t.Logf("expected second user email to be 'user1@rmail.com'")
 	}
 
 	//cleanup
